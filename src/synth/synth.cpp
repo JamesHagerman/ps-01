@@ -16,10 +16,10 @@ void Synth::setupSoundOutput() {
     attachInterruptDirect(I2S_IRQn, nrfx_i2s_irq_handler);
 
     nrfx_i2s_config_t const config = {
-        .sck_pin = I2S_PIN_SCK,
-        .lrck_pin = I2S_PIN_LRCK,
-        .mck_pin = NRFX_I2S_PIN_NOT_USED,
-        .sdout_pin = I2S_PIN_SDOUT,
+        .sck_pin = I2S_PIN_SCK, // A2, bit clock
+        .lrck_pin = I2S_PIN_LRCK, // A0, word select/lrclock
+        .mck_pin = I2S_PIN_MCLK, // A3, system/master clock
+        .sdout_pin = I2S_PIN_SDOUT, // A1, data out
         .sdin_pin = NRFX_I2S_PIN_NOT_USED,
         .irq_priority = NRFX_I2S_CONFIG_IRQ_PRIORITY,
         .mode = NRF_I2S_MODE_MASTER,

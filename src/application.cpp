@@ -3,25 +3,26 @@
 // #endif
 #if defined(PARTICLE)
 #include "Particle.h"
-#include "Adafruit_Trellis.h"
-#include "PCF8574.h"
+// #include "Adafruit_Trellis.h"
+// #include "PCF8574.h"
 #include "synth/types.h"
 SYSTEM_MODE(MANUAL);
 SerialLogHandler dbg(LOG_LEVEL_NONE, { {"app", LOG_LEVEL_ALL} });
 
-Adafruit_Trellis matrix0 = Adafruit_Trellis();
-Adafruit_TrellisSet trellis =  Adafruit_TrellisSet(&matrix0);
-bool keypadUpdated = false;
-uint16_t keypadState = 0;
-void keypadInterrupt();
-Timer keyUpTimer(50, keypadInterrupt, true);
+// Adafruit_Trellis matrix0 = Adafruit_Trellis();
+// Adafruit_TrellisSet trellis =  Adafruit_TrellisSet(&matrix0);
+// bool keypadUpdated = false;
+// uint16_t keypadState = 0;
+// void keypadInterrupt();
+// Timer keyUpTimer(50, keypadInterrupt, true);
 
-void encoderInterrupt();
-PCF8574 encoders(0x20, ENCODER_INT_PIN, encoderInterrupt);
-uint16_t state[4] = {0, 0, 0, 0};
-int32_t position[4] = {200, 200, 1 << 6, 500};
-int32_t lastPosition[4] = {0, 0, 0, 0};
-bool encoderUpdated = false;
+// void encoderInterrupt();
+// PCF8574 encoders(0x20, ENCODER_INT_PIN, encoderInterrupt);
+uint16_t state[4] = {10, 100, 100, 200}; // musical, pop-reduction
+// uint16_t state[4] = {0, 0, 255, 0}; // "full" on
+// int32_t position[4] = {200, 200, 1 << 6, 500};
+// int32_t lastPosition[4] = {0, 0, 0, 0};
+// bool encoderUpdated = false;
 #else
 #include <stdio.h>
 #include <string.h>
@@ -30,71 +31,72 @@ bool encoderUpdated = false;
 
 #include "synth/synth.h"
 
-void keypadInterrupt() {
-    keypadUpdated = true;
-}
+// void keypadInterrupt() {
+//     keypadUpdated = true;
+// }
 
-void setupEncoders() {
-    encoders.pinMode(P0, INPUT);
-    encoders.pinMode(P1, INPUT);
-    encoders.pinMode(P2, INPUT);
-    encoders.pinMode(P3, INPUT);
-    encoders.pinMode(P4, INPUT);
-    encoders.pinMode(P5, INPUT);
-    encoders.pinMode(P6, INPUT);
-    encoders.pinMode(P7, INPUT);
-    encoders.begin();
-}
+// void setupEncoders() {
+//     encoders.pinMode(P0, INPUT);
+//     encoders.pinMode(P1, INPUT);
+//     encoders.pinMode(P2, INPUT);
+//     encoders.pinMode(P3, INPUT);
+//     encoders.pinMode(P4, INPUT);
+//     encoders.pinMode(P5, INPUT);
+//     encoders.pinMode(P6, INPUT);
+//     encoders.pinMode(P7, INPUT);
+//     encoders.begin();
+// }
 
-void encoderInterrupt(){
-    encoderUpdated = true;
-}
+// void encoderInterrupt(){
+//     encoderUpdated = true;
+// }
 
-void calculateKnobPosition(uint8_t knob, uint8_t pinA, uint8_t pinB, uint8_t step=1) {
-    uint8_t newState = state[knob] & 3;
-    lastPosition[knob] = position[knob];
-    if (pinA)
-        newState |= 4;
-    if (pinB)
-        newState |= 8;
-    state[knob] = (newState >> 2);
-    switch (newState)
-    {
-        case 1:
-        case 7:
-        case 8:
-        case 14:
-            position[knob] -= step;
-            return;
-        case 2:
-        case 4:
-        case 11:
-        case 13:
-            position[knob] += step;
-            return;
-        case 3:
-        case 12:
-            position[knob] -= step * 2;
-            return;
-        case 6:
-        case 9:
-            position[knob] += step * 2;
-            return;
-    }
-}
+// void calculateKnobPosition(uint8_t knob, uint8_t pinA, uint8_t pinB, uint8_t step=1) {
+//     uint8_t newState = state[knob] & 3;
+//     lastPosition[knob] = position[knob];
+//     if (pinA)
+//         newState |= 4;
+//     if (pinB)
+//         newState |= 8;
+//     state[knob] = (newState >> 2);
+//     switch (newState)
+//     {
+//         case 1:
+//         case 7:
+//         case 8:
+//         case 14:
+//             position[knob] -= step;
+//             return;
+//         case 2:
+//         case 4:
+//         case 11:
+//         case 13:
+//             position[knob] += step;
+//             return;
+//         case 3:
+//         case 12:
+//             position[knob] -= step * 2;
+//             return;
+//         case 6:
+//         case 9:
+//             position[knob] += step * 2;
+//             return;
+//     }
+// }
 
 void setup() {
 #if defined(PARTICLE)
-    waitUntil(Serial.isConnected);
+    // waitUntil(Serial.isConnected);
 
     Wire.setSpeed(CLOCK_SPEED_400KHZ);
-    pinMode(KEYPAD_INT_PIN, INPUT_PULLUP);
-    attachInterrupt(KEYPAD_INT_PIN, keypadInterrupt, CHANGE);
-    trellis.begin(0x70);
+    // pinMode(KEYPAD_INT_PIN, INPUT_PULLUP);
+    // attachInterrupt(KEYPAD_INT_PIN, keypadInterrupt, CHANGE);
+    // trellis.begin(0x70);
 
-    setupEncoders();
+    // setupEncoders();
 #endif
     Synth::instance()->voices[0].setWaveform(WF_TRIANGLE);
+    Synth::instance()->voices[0].setPulseWidth(32536); // 50%
     Synth::instance()->voices[0].setFrequency(C4_HZ);
     Synth::instance()->voices[0].setADSR(state[0], state[1], state[2], state[3]);
     // Synth::instance()->voices[1].setWaveform(WF_SAWTOOTH);
@@ -103,9 +105,9 @@ void setup() {
 }
 
 // #define CYCLE
-// #define SCALE
+#define SCALE
 // #define PWM
-#define TRELLIS
+// #define TRELLIS
 
 #ifdef CYCLE
 void loop() {
@@ -124,13 +126,15 @@ void loop() {
 void loop() {
     Synth::instance()->voices[0].setWaveform(WF_PULSE);
     Synth::instance()->voices[0].setFrequency(C4_HZ);
+    Synth::instance()->voices[0].setADSR(state[0], state[1], state[2], state[3]);
+    Synth::instance()->voices[0].setGate(true);
     uint16_t maxPW = (1 << 16) / 1 - 1;
     uint16_t steps = 16;
     for (uint16_t i = 0; i < maxPW; i+=maxPW / steps) {
         Log.trace("Fill %.0f%% %i", float(i) / maxPW * 100, i);
         // printf("Fill %.0f%% %i\n", float(i) / maxPW * 100, i);
         Synth::instance()->voices[0].setPulseWidth(i);
-        delay(1000);
+        delay(250);
     }
 }
 #endif
@@ -152,18 +156,25 @@ void loop() {
 // float scale[] = { C4_HZ, D4_HZ, E4_HZ, F4_HZ, G4_HZ, A4_HZ, B4_HZ, C5_HZ, B4_HZ, A4_HZ, G4_HZ, F4_HZ, E4_HZ, D4_HZ };
 float scale[] = { C4_HZ, D4_HZ, E4_HZ, F4_HZ, G4_HZ, A4_HZ, B4_HZ, C5_HZ };
 
+// All C's on a piano:
+// float scale[] = { C0_HZ , C1_HZ, C2_HZ, C3_HZ, C4_HZ, C5_HZ, C6_HZ, C7_HZ, C8_HZ };
+
+// Testing full range of this implementation; It doesn't work :(
+// float scale[] = { 10.0f, 16000.0f };
+
 void loop() {
-    Synth::instance()->voices[0].setWaveform(WF_TRIANGLE);
+    // Synth::instance()->voices[0].setWaveform(WF_SAWTOOTH);
+
     for (int i=0; i<sizeof(scale)/sizeof(float); ++i) {
-        trellis.setLED(i);
-        trellis.writeDisplay();
+        // trellis.setLED(i);
+        // trellis.writeDisplay();
         Synth::instance()->voices[0].setFrequency(scale[i]);
         Synth::instance()->voices[0].setGate(true);
-        delay(600);
-        Synth::instance()->voices[0].setGate(false);
         delay(1000);
-        trellis.clrLED(i);
-        trellis.writeDisplay();
+        Synth::instance()->voices[0].setGate(false);
+        delay(500);
+        // trellis.clrLED(i);
+        // trellis.writeDisplay();
     }
     // Synth::instance()->voices[0].setWaveform(WF_TRIANGLE);
     // for (int i=0; i<sizeof(scale)/sizeof(float); ++i) {

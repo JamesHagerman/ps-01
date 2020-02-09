@@ -34,6 +34,11 @@ typedef enum {
 #define SAMPLERATE_16K
 // #define SAMPLERATE_11K
 
+// WSEL/LRCK is calculated based on the MCK divided by some ratio
+// For UDA1334/Adafruit board, no MCK line is used. Only LRCK (they call it WSEL for word select). LRCK needs to be 515kHz-ish
+// For the PCM502a cheapo board, the LRCK and MCK can be used... but out of the box, it can use the same timings as the adafruit board!
+// For the Wolfson, we need to enable stuff via the MPU interface before audio comes out (as far as I can tell)
+
 #ifdef SAMPLERATE_44K
 #define SAMPLERATE_HZ   44100
 #ifdef PARTICLE
@@ -58,6 +63,7 @@ typedef enum {
 // Effective sampling rate of 16.1290328125kHz
 #define I2S_MCK NRF_I2S_MCK_32MDIV31
 #define I2S_RATIO NRF_I2S_RATIO_64X
+// #define I2S_RATIO NRF_I2S_RATIO_192X
 #endif
 #endif
 
@@ -73,13 +79,14 @@ typedef enum {
 // Number of clock cycles for one milisecond
 #define ONE_MS          SAMPLERATE_HZ / 1000
 #define AMPLITUDE       ((1<<16)-1)
-// #define AMPLITUDE       ((1<<12)-1)
+// #define AMPLITUDE       ((1<<14)-1)
 #define WAVE_TABLE_SIZE 256
 
 #ifdef PARTICLE
-#define I2S_PIN_SCK    (NRF_GPIO_PIN_MAP(0, 28)) // A2
-#define I2S_PIN_LRCK   (NRF_GPIO_PIN_MAP(0, 3)) // A0
-#define I2S_PIN_SDOUT  (NRF_GPIO_PIN_MAP(0, 4)) // A1
+#define I2S_PIN_SCK    (NRF_GPIO_PIN_MAP(0, 28)) // A2, bclk, bit clock actually
+#define I2S_PIN_LRCK   (NRF_GPIO_PIN_MAP(0, 3)) // A0, wsel, left right, word select
+#define I2S_PIN_SDOUT  (NRF_GPIO_PIN_MAP(0, 4)) // A1, data out
+#define I2S_PIN_MCLK   (NRF_GPIO_PIN_MAP(0, 29)) // A3, mclk, master clock
 
 #define ENCODER_INT_PIN D2
 
@@ -88,6 +95,10 @@ typedef enum {
 #include <stdint.h>
 #endif
 
+#define C0_HZ  16.35
+#define C1_HZ  32.70
+#define C2_HZ  65.41
+#define C3_HZ  130.81
 #define C4_HZ  261.63
 #define C4S_HZ 277.18
 #define D4_HZ  293.66
@@ -101,6 +112,9 @@ typedef enum {
 #define A4S_HZ 466.16
 #define B4_HZ  493.88
 #define C5_HZ  523.25
+#define C6_HZ  1046.50
+#define C7_HZ  2093.00
+#define C8_HZ  4186.01
 
 #define BIT_SET(a, b) ((a) |= (1ULL<<(b)))
 #define BIT_CLEAR(a, b) ((a) &= ~(1ULL<<(b)))

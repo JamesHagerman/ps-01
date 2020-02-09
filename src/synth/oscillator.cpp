@@ -64,7 +64,7 @@ void Oscillator::generateSawtoothWave() {
 
 void Oscillator::generatePulseWave() {
     for (int i=0; i<WAVE_TABLE_SIZE; ++i) {
-        pulseWave[i] = float(_pulseWidth) / float(WAVE_TABLE_SIZE) / 2 > i ? AMPLITUDE / 2 : -(AMPLITUDE / 2);
+        pulseWave[i] = float(_pulseWidth) / float(WAVE_TABLE_SIZE) > i ? AMPLITUDE / 2 : -(AMPLITUDE / 2);
     }
 }
 
