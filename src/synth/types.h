@@ -40,11 +40,12 @@ typedef enum {
 // For the Wolfson, we need to enable stuff via the MPU interface before audio comes out (as far as I can tell)
 
 #ifdef SAMPLERATE_44K
+// SLAVE ONLY??
 #define SAMPLERATE_HZ   44100
 #ifdef PARTICLE
 // Effective sampling rate of 44.44444375kHz
 #define I2S_MCK NRF_I2S_MCK_32MDIV15
-#define I2S_RATIO NRF_I2S_RATIO_48X
+#define I2S_RATIO NRF_I2S_RATIO_256X
 #endif
 #endif
 
@@ -61,9 +62,11 @@ typedef enum {
 #define SAMPLERATE_HZ   16129
 #ifdef PARTICLE
 // Effective sampling rate of 16.1290328125kHz
-#define I2S_MCK NRF_I2S_MCK_32MDIV31
-#define I2S_RATIO NRF_I2S_RATIO_64X
+#define I2S_MCK NRF_I2S_MCK_32MDIV31 // MCK = 32 MHz / 31 = 1.0322581 MHz
+#define I2S_RATIO NRF_I2S_RATIO_64X  // LRCK = MCK / 64 = 16.1290328125 kHz
 // #define I2S_RATIO NRF_I2S_RATIO_192X
+// For wolfson, 16129/384 = 42khz. Target is 44.1khz
+// To get that, mclk = 16.9344 khz; BOSR=1 ; SR3=1; SR2=0; SR1=0; SR0=0; filter type 1
 #endif
 #endif
 

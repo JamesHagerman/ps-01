@@ -13,22 +13,27 @@ void Synth::begin() {
 
 void Synth::setupSoundOutput() {
 #ifdef PARTICLE
+    // I2S related configuration:
     attachInterruptDirect(I2S_IRQn, nrfx_i2s_irq_handler);
 
     nrfx_i2s_config_t const config = {
         .sck_pin = I2S_PIN_SCK, // A2, bit clock
         .lrck_pin = I2S_PIN_LRCK, // A0, word select/lrclock
         .mck_pin = I2S_PIN_MCLK, // A3, system/master clock
+        // .mck_pin = NRFX_I2S_PIN_NOT_USED, // A3, system/master clock
         .sdout_pin = I2S_PIN_SDOUT, // A1, data out
         .sdin_pin = NRFX_I2S_PIN_NOT_USED,
         .irq_priority = NRFX_I2S_CONFIG_IRQ_PRIORITY,
         .mode = NRF_I2S_MODE_MASTER,
+        // .mode = NRF_I2S_MODE_SLAVE, // Attempt at getting wolfson chip working
         .format = NRF_I2S_FORMAT_I2S,
         .alignment = NRF_I2S_ALIGN_LEFT,
         .sample_width = NRF_I2S_SWIDTH_16BIT,
         .channels = NRF_I2S_CHANNELS_STEREO,
         .mck_setup = I2S_MCK,
         .ratio = I2S_RATIO
+        // .mck_setup    = NRF_I2S_MCK_32MDIV4; // MCLK = NRF_I2S_MCK_32MDIV8 = 4 MHz.
+        // .ratio = NRF_I2S_RATIO_256X  // ratio not relevant in slave mode!
     };
 
     i2sBuffersA.p_tx_buffer = (uint32_t*)bufferA;
